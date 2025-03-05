@@ -6,7 +6,8 @@ module.exports.createPromptController = async(req, res)=> {
     const file = req.file
 
     try {
-        const text = await extractText({file: file.path})
+        const text = await extractText()
+        console.log(file)
         if (!text) return res.status(404).json({message: 'Image to text convertion failed'})
         const completion = await createPrompt({prompt: text})
         // fs.unlinkSync(file.path)
