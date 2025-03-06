@@ -2,6 +2,7 @@ import 'prismjs/themes/prism-tomorrow.css'
 import prism from 'prismjs'
 import { useEffect, useState } from 'react'
 import Upload from './components/Upload'
+import ResumeReviewPreview from './components/ResumeReviewPreview'
 
 function App() {
   const [formData, setFormData] = useState(null)
@@ -23,7 +24,6 @@ function App() {
 }
 
   const onSubmitHandler = async ()=> {
-    console.log(formData)
     if (!formData) return;
     const response = await fetch(import.meta.env.VITE_BASE_URL, {
       method: 'POST',
@@ -35,7 +35,7 @@ function App() {
 
   return (
     <>
-    <main className='w-full h-screen bg-red-700 flex text-white'>
+    <main className='w-full h-screen bg-red-700 flex text-white max-md:flex-col'>
       <div className="basis-[50%] bg-black">
         <div className='w-full h-full flex justify-center flex-col items-center'>
         <Upload setShowButton={setShowButton} onChangeHander={onChangeHander}/>
@@ -51,16 +51,15 @@ function App() {
         }
         </div>
       </div>
-      <div className="basis-[50%] bg-slate-950 p-5">
-        <pre className='language-js code-block'>
-        <code className='language-js'>
-          {
-            `${
-              responseData
-            }`
-          }
-        </code>
-        </pre>
+      <div className="basis-[50%] bg-gray-950 px-3 py-4 min-w-[50%]">
+        {
+          responseData ? (
+            <ResumeReviewPreview PreviewData={responseData}/>
+          ): 
+          (
+          <p className='text-center text-2xl font-semibold bg-gray-700 py-2 rounded-sm'>No review data yet.</p>
+        )
+        }
       </div>
     </main>
     </>

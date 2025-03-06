@@ -15,7 +15,8 @@ module.exports.createPrompt = async ({prompt})=> {
             - Strengths 
             - Weaknesses 
             - Suggested improvements 
-            - Best job suitability  
+            - Best job suitability
+            - Score between 10 of 10
             
             **Rules for Responses:**  
             - Always use professional HR language  
@@ -29,7 +30,7 @@ module.exports.createPrompt = async ({prompt})=> {
                 "weaknesses": ["...", "..."],
                 "suggestions": ["...", "..."],
                 "best_job_fit": "..."
-              }  
+              }
             `
           },
           {role: 'user', content: prompt}

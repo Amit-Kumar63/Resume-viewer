@@ -15,4 +15,3 @@ module.exports.createPromptController = async(req, res)=> {
         fs.unlinkSync(file.path)
     }
 }
-// completion.choices[0].message.content
