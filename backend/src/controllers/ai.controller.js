@@ -4,16 +4,15 @@ const fs = require('fs')
 
 module.exports.createPromptController = async(req, res)=> {
     const file = req.file
-
     try {
-        const text = await extractText()
-        console.log(file)
+        const text = await extractText({file})
         if (!text) return res.status(404).json({message: 'Image to text convertion failed'})
         const completion = await createPrompt({prompt: text})
-        // fs.unlinkSync(file.path)
+        fs.unlinkSync(file.path)
         res.status(200).json({messages: 'Resume check successfully', data: completion.choices[0].message.content})
     } catch (error) {
-        res.status(401).send(error)
+        res.status(401).json({message: error.message})
         fs.unlinkSync(file.path)
     }
 }
+// completion.choices[0].message.content
