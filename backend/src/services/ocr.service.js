@@ -18,7 +18,7 @@ module.exports.extractText = async ({file})=> {
       },
       body: params.toString() 
     })
-    const response = await jsonResponse.json()  
+    const response = await jsonResponse.json()
     return response.ParsedResults[0].ParsedText
   } catch (error) {
     throw error

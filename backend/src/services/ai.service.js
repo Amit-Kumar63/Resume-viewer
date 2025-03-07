@@ -17,20 +17,19 @@ module.exports.createPrompt = async ({prompt})=> {
             - Suggested improvements 
             - Best job suitability
             - Score between 10 of 10
-            
+            - Give some ans acording to you 
+
             **Rules for Responses:**  
             - Always use professional HR language  
             - Be specific, do not use generic phrases  
             - Provide suggestions for improvement  
             - If information is missing, point it out and recommend what to add  
-            - Return the response in JSON format:  
+            - Return the response like chat gpt :  
               
-              {
-                "strengths": ["...", "..."],
-                "weaknesses": ["...", "..."],
-                "suggestions": ["...", "..."],
-                "best_job_fit": "..."
-              }
+                "strengths"
+                "weaknesses"
+                "suggestions"
+                "best_job_fit"
             `
           },
           {role: 'user', content: prompt}

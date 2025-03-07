@@ -7,6 +7,8 @@ import ResumeReviewPreview from './components/ResumeReviewPreview'
 function App() {
   const [formData, setFormData] = useState(null)
   const [responseData, setResponseData] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
 
   useEffect(()=> {
     prism.highlightAll()
@@ -25,17 +27,46 @@ function App() {
 
   const onSubmitHandler = async ()=> {
     if (!formData) return;
-    const response = await fetch(import.meta.env.VITE_BASE_URL, {
-      method: 'POST',
-      body: formData
-    })
-    const {data} = await response.json(); 
-    setResponseData(data)
+    try {
+      setIsLoading(true)
+      const response = await fetch(import.meta.env.VITE_BASE_URL, {
+        method: 'POST',
+        body: formData
+      })
+      if (response.status === 200) {
+      const {data} = await response.json(); 
+      setIsLoading(false)
+      setResponseData(data)
+      }
+    } catch (error) {
+      setIsLoading(false)
+      console.error(error)
+    }
+    
   }
+  useEffect(()=> {
+    if (isLoading) {
+      setLoadingMessage('Uploading....')
+      setTimeout(()=> {
+        setLoadingMessage('Please wait ai is working for you')
+      }, 3000)
 
+      setTimeout(()=> {
+        setLoadingMessage('Ai doing good for you !!')
+      }, 7000)
+
+      setTimeout(()=> {
+        setLoadingMessage("Patience bears sweet fruit!!")
+      }, 10000)
+
+      setTimeout(()=> {
+        setLoadingMessage('Our ai is still working for you. Please wait...')
+      }, 13000)
+    }
+  }, [isLoading])
   return (
     <>
-    <main className='w-full h-screen bg-red-700 flex text-white max-md:flex-col'>
+    <main className='w-full h-screen flex text-white max-md:flex-col scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-500 scrollbar-track-gray-200'>
       <div className="basis-[50%] bg-black">
         <div className='w-full h-full flex justify-center flex-col items-center'>
         <Upload setShowButton={setShowButton} onChangeHander={onChangeHander}/>
@@ -51,14 +82,20 @@ function App() {
         }
         </div>
       </div>
-      <div className="basis-[50%] bg-gray-950 px-3 py-4 min-w-[50%]">
+      <div className="basis-[50%] bg-gray-950 px-5 py-4 max-md:py-6 min-w-[60%] overflow-x-hidden overflow-y-scroll scroll-smooth">
+      <p className='text-center text-2xl font-semibold bg-gray-700 py-2 rounded-sm mb-8'>{
+            responseData ? 'Resume summary' : 'No review data yet.'
+          }</p>
         {
-          responseData ? (
+          isLoading ? (
+            <div className='w-full h-full flex justify-center items-center'>
+            <p className='font-semibold text-2xl'>
+              {loadingMessage}
+            </p>
+            </div>
+          ) : (
             <ResumeReviewPreview PreviewData={responseData}/>
-          ): 
-          (
-          <p className='text-center text-2xl font-semibold bg-gray-700 py-2 rounded-sm'>No review data yet.</p>
-        )
+          )
         }
       </div>
     </main>
