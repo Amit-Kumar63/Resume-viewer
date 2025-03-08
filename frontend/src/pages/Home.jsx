@@ -30,12 +30,11 @@ const Home = () => {
     const onSubmitHandler = async ()=> {
       if (!formData) return;
       const fp = await getFingerprint()
-      console.log(fp)
         setIsLoading(true)
         const response = await fetch(import.meta.env.VITE_BASE_URL, {
           method: 'POST',
           headers: {
-            'fp': fp
+            'Authorization': `Bearer ${fp}`
           },
           body: formData,
         })
@@ -97,7 +96,7 @@ const Home = () => {
       {
         isLoading ? (
           <div className='w-full h-full flex justify-center items-center'>
-          <p className='font-semibold text-2xl'>
+          <p className='font-semibold text-2xl max-lg:text-xl max-md:text-base'>
             {loadingMessage}
           </p>
           </div>
