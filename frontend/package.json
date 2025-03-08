@@ -10,11 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.1",
+    "@fingerprintjs/fingerprintjs-pro-react": "^2.6.3",
     "@tailwindcss/vite": "^4.0.10",
+    "firebase": "^11.4.0",
     "prismjs": "^1.29.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.0.1",
+    "react-router-dom": "^7.3.0",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.0.10"

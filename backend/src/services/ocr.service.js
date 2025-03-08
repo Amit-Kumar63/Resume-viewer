@@ -19,6 +19,9 @@ module.exports.extractText = async ({file})=> {
       body: params.toString() 
     })
     const response = await jsonResponse.json()
+    if (response.ErrorMessage) {
+      throw Error(response.ErrorMessage || 'Text parsed failed')
+    }
     return response.ParsedResults[0].ParsedText
   } catch (error) {
     throw error

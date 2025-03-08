@@ -7,7 +7,7 @@ const ResumeReviewPreview = ({PreviewData}) => {
 
   return (
     <pre>
-      <code className='text-xl max-lg:text-lg text-wrap'>
+      <code className={`text-xl max-lg:text-lg text-wrap ${PreviewData?.length > 100 ? 'text-white': 'text-red-600'}`}>
           <Markdown remarkPlugins={[[remarkGfm, {singleTilde: false}]]} children={
             PreviewData
           }/>

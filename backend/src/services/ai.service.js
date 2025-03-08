@@ -18,6 +18,7 @@ module.exports.createPrompt = async ({prompt})=> {
             - Best job suitability
             - Score between 10 of 10
             - Give some ans acording to you 
+            - Give expected salary
 
             **Rules for Responses:**  
             - Always use professional HR language  
