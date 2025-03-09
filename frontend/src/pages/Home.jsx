@@ -6,6 +6,7 @@ import ResumeReviewPreview from '../components/ResumeReviewPreview'
 import getFingerprint from '../utils/getFingerprint'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../../firebase.config'
+import { toast } from 'react-toastify'
 
 const Home = () => {
     const [formData, setFormData] = useState(null)
@@ -34,12 +35,8 @@ const Home = () => {
       if (!formData) return;
       const fp = await getFingerprint()
       let token;
-      auth.onAuthStateChanged((currentUser)=> {
-        currentUser.getIdToken().then((token)=> token= token)
-        .catch((error)=> {
-          console.error(error)
-        })
-      })
+      const currentUser = auth.currentUser
+      token = await currentUser?.getIdToken(true)
         setIsLoading(true)
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/get-response`, {
           method: 'POST',
@@ -51,13 +48,18 @@ const Home = () => {
         const {data, message} = await response.json();
 
         if (response.status === 403) {
-          navigate('/login')
+          toast.error(message || 'Limite exceed')
+          setTimeout(()=> {
+            navigate('/login')
+          }, 2000)
         }
 
         if (response.status === 200) {
+          toast.success(message || 'Resume analyzed successfully')
         setIsLoading(false)
         setResponseData(data)
         } else {
+          toast.error(message || 'Something went wrong')
           setIsLoading(false)
         setResponseData(message)
         console.error(message)

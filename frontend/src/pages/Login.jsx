@@ -1,9 +1,12 @@
 import React from 'react'
 import { provider, signInWithPopup, auth } from '../../firebase.config'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { auth, signOut } from '../../firebase.config'
 
 const Login = () => {
 
+  const navigate = useNavigate()
     const login = async (token)=> {
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user/login`, {
             method: 'GET',
@@ -12,9 +15,17 @@ const Login = () => {
             }
         })
         const data = await response.json()
-        console.log(data)
+        if (response.status === 200) {
+          toast.success('Login successfully')
+          localStorage.setItem('ai.hr', data?.user?.accessToken)
+          setTimeout(()=> {
+            navigate('/')
+          }, 2000)
+        } else {
+          await signOut(auth)
+          toast.success( data.message || 'Login failed. Please try again')
+        }
     }
-
 
     const loginHandler = async ()=> {
         try {
@@ -22,6 +33,7 @@ const Login = () => {
           const token = await result.user.getIdToken(true)
           login(token)
         } catch (error) {
+          await signOut(auth)
           console.error(error.message || 'Something went wrong while signup')
         }
       }

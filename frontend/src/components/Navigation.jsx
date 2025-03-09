@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { auth, signOut } from '../../firebase.config'
 
 const Navigation = () => {
     const [openMenu, setOpenMenu] = useState(false)
+    const [token, setToken] = useState(null)
 
     const navigate = useNavigate()
 
@@ -13,6 +16,28 @@ const Navigation = () => {
     const signup = ()=> {
         setOpenMenu(false)
         navigate('/signup')
+    }
+
+    useEffect(()=> {
+        setToken(localStorage.getItem('ai.hr'))
+    }, [])
+
+    const logoutHandler = async ()=> {
+        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/user/logout`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        const { data, message } = await res.json()
+        if (res.status === 200) {
+            toast.success(message || 'User logged out')
+            localStorage.removeItem('ai.hr')
+            await signOut(auth)
+            setTimeout(()=> {
+                navigate('/login')
+            }, 2000)
+        }
     }
   return (
     <header className='w-full py-4 px-5 bg-gray-900 text-white flex justify-between items-center'>
@@ -25,7 +50,15 @@ const Navigation = () => {
             <Link to='/developer-info'>Developer Info</Link>
         </nav>
         <div className='flex gap-5 max-md:hidden'>
-            <button
+            {
+                token ? (
+                    <button
+                    onClick={logoutHandler}
+                    className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
+                    >Logout</button>
+                ) : (
+                    <>
+                <button
             onClick={login}
             className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
             >
@@ -37,6 +70,9 @@ const Navigation = () => {
             >
                 Signup
             </button>
+                </>
+                )
+            }
         </div>
         <div className='hidden max-md:flex relative'>
         {

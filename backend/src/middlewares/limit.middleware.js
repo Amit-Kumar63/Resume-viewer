@@ -1,4 +1,5 @@
 const limitModel = require("../models/limit.model");
+const userModel = require('../models/user.model')
 const admin = require('../../firebase-admin')
 
 module.exports.limitMiddleware = async (req, res, next) => {
@@ -15,7 +16,7 @@ module.exports.limitMiddleware = async (req, res, next) => {
             const decodedToken = await admin.auth().verifyIdToken(token)
             if (!decodedToken) throw new error('Invailid token')
             const { email } = decodedToken
-            const LoggedInUser = await limitModel.findOne({email})
+            const LoggedInUser = await userModel.findOne({email})
             if (LoggedInUser.count >= 4) {
                 return res.status(403).json({ message: "Limit reached, please login" });
             }
@@ -42,6 +43,7 @@ module.exports.limitMiddleware = async (req, res, next) => {
     
         next();
     } catch (error) {
+        console.log(error)
         console.error("Usage tracking error:", error);
         res.status(500).json({ error: "Server error" });
     }
