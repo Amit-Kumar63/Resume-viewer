@@ -4,14 +4,17 @@ import { useEffect, useState } from 'react'
 import Upload from '../components/Upload'
 import ResumeReviewPreview from '../components/ResumeReviewPreview'
 import getFingerprint from '../utils/getFingerprint'
+import { useNavigate } from 'react-router-dom'
+import { auth } from '../../firebase.config'
 
 const Home = () => {
     const [formData, setFormData] = useState(null)
     const [responseData, setResponseData] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState('')
-  
-  
+
+    const navigate = useNavigate()
+
     useEffect(()=> {
       prism.highlightAll()
     })
@@ -30,15 +33,27 @@ const Home = () => {
     const onSubmitHandler = async ()=> {
       if (!formData) return;
       const fp = await getFingerprint()
+      let token;
+      auth.onAuthStateChanged((currentUser)=> {
+        currentUser.getIdToken().then((token)=> token= token)
+        .catch((error)=> {
+          console.error(error)
+        })
+      })
         setIsLoading(true)
-        const response = await fetch(import.meta.env.VITE_BASE_URL, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/get-response`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${fp}`
+            'Authorization': `Bearer ${token || fp}`
           },
           body: formData,
         })
         const {data, message} = await response.json();
+
+        if (response.status === 403) {
+          navigate('/login')
+        }
+
         if (response.status === 200) {
         setIsLoading(false)
         setResponseData(data)
@@ -47,7 +62,6 @@ const Home = () => {
         setResponseData(message)
         console.error(message)
         }
-      
     }
     useEffect(()=> {
       if (isLoading) {

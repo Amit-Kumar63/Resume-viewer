@@ -1,16 +1,34 @@
 const limitModel = require("../models/limit.model");
+const admin = require('../../firebase-admin')
 
 module.exports.limitMiddleware = async (req, res, next) => {
     const fingerprint = req.headers?.authorization?.split(' ')[1]
-    if (!fingerprint)
+    const token = req.headers?.authorization?.split(' ')[1]
+
+    if (!fingerprint || !token)
         res.status(404).json({
-            message: "Something went wrong or fingerprint not found",
+            message: "Something went wrong!. fingerprint trace failed",
         });
     try {
-        console.log(fingerprint)
-        let user = await limitModel.findOne({fingerprint: fp})
+        // Check limit count if user login 
+        if (token) {
+            const decodedToken = await admin.auth().verifyIdToken(token)
+            if (!decodedToken) throw new error('Invailid token')
+            const { email } = decodedToken
+            const LoggedInUser = await limitModel.findOne({email})
+            if (LoggedInUser.count >= 4) {
+                return res.status(403).json({ message: "Limit reached, please login" });
+            }
+            LoggedInUser.count += 1;
+            LoggedInUser.lastUsed = Date.now();
+            await LoggedInUser.save();
+        }
+
+        // check limit count if user not loggedIn
+        if (fingerprint) {
+            let user = await limitModel.findOne({fingerprint})
         if (!user) {
-            user = new limitModel({fingerprint, count: 1})
+            user = await limitModel.create({fingerprint, count: 1})
             await user.save()
             return next()
         }
@@ -20,6 +38,7 @@ module.exports.limitMiddleware = async (req, res, next) => {
         user.count += 1;
         user.lastUsed = Date.now();
         await user.save();
+        }
     
         next();
     } catch (error) {
