@@ -41,7 +41,7 @@ const Home = () => {
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/get-response`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token || fp}`
+            'Authorization': `Bearer ${token ? token :  fp}`
           },
           body: formData,
         })
