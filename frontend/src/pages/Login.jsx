@@ -1,8 +1,7 @@
 import React from 'react'
-import { provider, signInWithPopup, auth } from '../../firebase.config'
+import { provider, signInWithPopup, auth, signOut } from '../../firebase.config'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { auth, signOut } from '../../firebase.config'
 
 const Login = () => {
 
