@@ -4,7 +4,7 @@ const admin = require('../../firebase-admin')
 
 module.exports.limitMiddleware = async (req, res, next) => {
     const fingerprint = req.headers?.authorization?.split(' ')[1]
-    const token = req.headers?.authorization?.split(' ')[1]
+    const {token} = req.headers
 
     if (!fingerprint || !token)
         res.status(404).json({
@@ -12,7 +12,7 @@ module.exports.limitMiddleware = async (req, res, next) => {
         });
     try {
         // Check limit count if user login 
-        if (token) {
+        if (token && token !== "undefined" && token !== "null") {
             const decodedToken = await admin.auth().verifyIdToken(token)
             if (!decodedToken) throw new error('Invailid token')
             const { email } = decodedToken

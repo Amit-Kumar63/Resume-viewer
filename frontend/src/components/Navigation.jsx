@@ -35,12 +35,12 @@ const Navigation = () => {
             localStorage.removeItem('ai.hr')
             await signOut(auth)
             setTimeout(()=> {
-                navigate('/login')
+                location.replace('/login')
             }, 2000)
         }
     }
   return (
-    <header className='w-full py-4 px-5 bg-gray-900 text-white flex justify-between items-center'>
+    <header className='w-full py-4 px-5 max-md:py-2 bg-gray-900 text-white flex justify-between items-center'>
         <Link to='/'>
         <img src="logo.png" alt="logo" className='w-12 h-w-12 object-cover'/>
         </Link>
