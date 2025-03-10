@@ -105,7 +105,7 @@ const Home = () => {
           </button>
         )}
       </div>
-      <div className='basis-[50%] max-md:basis-[60%] bg-gray-950 p-6 overflow-y-auto'>
+      <div className='basis-[50%] max-md:basis-[60%] bg-gray-950 p-6 overflow-y-auto pb-28'>
         <p className='text-center text-lg font-semibold bg-gray-700 py-3 rounded-md mb-6'>
           {responseData ? 'Resume Summary' : 'No review data yet.'}
         </p>
