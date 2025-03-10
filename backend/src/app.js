@@ -17,7 +17,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
 
-// Reset Count after 1 week from user model
+// Reset Count after 1 week from limite model
 cron.schedule('0 0 * * 0', async () => {
     try {
         await limitModel.updateMany({}, { count: 0 });
