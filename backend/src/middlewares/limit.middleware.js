@@ -18,7 +18,7 @@ module.exports.limitMiddleware = async (req, res, next) => {
             const { email } = decodedToken
             const LoggedInUser = await userModel.findOne({email})
             if (LoggedInUser.count >= 4) {
-                return res.status(403).json({ message: "Limit reached, please login" });
+                return res.status(403).json({ message: "Limit reached, please login or try after 7 days" });
             }
             LoggedInUser.count += 1;
             LoggedInUser.lastUsed = Date.now();

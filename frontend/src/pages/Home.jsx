@@ -1,137 +1,124 @@
-import 'prismjs/themes/prism-tomorrow.css'
-import prism from 'prismjs'
-import { useEffect, useRef, useState } from 'react'
-import Upload from '../components/Upload'
-import ResumeReviewPreview from '../components/ResumeReviewPreview'
-import getFingerprint from '../utils/getFingerprint'
-import { useNavigate } from 'react-router-dom'
-import { auth } from '../../firebase.config'
-import { toast } from 'react-toastify'
+import 'prismjs/themes/prism-tomorrow.css';
+import prism from 'prismjs';
+import { useEffect, useRef, useState } from 'react';
+import Upload from '../components/Upload';
+import ResumeReviewPreview from '../components/ResumeReviewPreview';
+import getFingerprint from '../utils/getFingerprint';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../../firebase.config';
+import { toast } from 'react-toastify';
 
 const Home = () => {
-    const [formData, setFormData] = useState(null)
-    const [responseData, setResponseData] = useState(null)
-    const [isLoading, setIsLoading] = useState(false)
-    const [loadingMessage, setLoadingMessage] = useState('')
-    const [isRedirect, setIsRedirect] = useState(false)
+  const [formData, setFormData] = useState(null);
+  const [responseData, setResponseData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [isRedirect, setIsRedirect] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const navigate = useNavigate();
+  const timeouts = useRef([]);
 
-    const navigate = useNavigate()
+  useEffect(() => {
+    prism.highlightAll();
+  }, []);
 
-    useEffect(()=> {
-      prism.highlightAll()
-    })
-  
-    const [showButton, setShowButton] = useState(false)
-  
-    const onChangeHander = (e)=> {
-      if (e.target.files && e.target.files.length > 0) {
-        const fileData = new FormData();
-        fileData.append('file', e.target.files[0]);
-        setFormData(fileData);
-        setShowButton(true);
-      }
-  }
-  
-    const onSubmitHandler = async ()=> {
-      if (!formData) return;
-      const fp = await getFingerprint()
-      const currentUser = auth.currentUser;
-      const token = currentUser ? await currentUser.getIdToken(true) : null;
-        setIsLoading(true)
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/get-response`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${fp}`,
-            'token': token || null
-          },
-          body: formData,
-        })
-        const {data, message} = await response.json();
-
-        if (response.status === 403) {
-          toast.error(message || 'Limite exceed')
-          setIsLoading(false)
-          setIsRedirect(true)
-        }
-
-        if (response.status === 200) {
-          toast.success(message || 'Resume analyzed successfully')
-        setIsLoading(false)
-        setResponseData(data)
-        } else {
-          toast.error(message || 'Something went wrong')
-          setIsLoading(false)
-        setResponseData(message)
-        console.error(message)
-        }
+  const onChangeHandler = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileData = new FormData();
+      fileData.append('file', e.target.files[0]);
+      setFormData(fileData);
+      setShowButton(true);
     }
-    const timeouts = useRef([]);
-    useEffect(() => {
-      if (isLoading) {
-          setLoadingMessage('Uploading....');
-          
-          timeouts.current = [
-              setTimeout(() => setLoadingMessage('Please wait, AI is working for you'), 3000),
-              setTimeout(() => setLoadingMessage('AI is doing good for you !!'), 9000),
-              setTimeout(() => setLoadingMessage('Patience bears sweet fruit!!'), 14000),
-              setTimeout(() => setLoadingMessage('Our AI is still working for you. Please wait...'), 20000),
-          ];
-      } else {
-          timeouts.current.forEach(clearTimeout);
-          timeouts.current = [];
-      }
+  };
 
-      return () => {
-          timeouts.current.forEach(clearTimeout);
-          timeouts.current = [];
-      };
+  const onSubmitHandler = async () => {
+    if (!formData) return;
+    const fp = await getFingerprint();
+    const currentUser = auth.currentUser;
+    const token = currentUser ? await currentUser.getIdToken(true) : null;
+    setIsLoading(true);
+    
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/get-response`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${fp}`,
+        'token': token || null
+      },
+      body: formData,
+    });
+
+    const { data, message } = await response.json();
+    if (response.status === 403) {
+      toast.error(message || 'Limit exceeded');
+      setIsLoading(false);
+      setIsRedirect(true);
+    } else if (response.status === 200) {
+      toast.success(message || 'Resume analyzed successfully');
+      setResponseData(data);
+    } else {
+      toast.error(message || 'Something went wrong');
+      setResponseData(message);
+    }
+    if (!data) {
+    setIsLoading(false);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (isLoading) {
+      setLoadingMessage('Uploading...');
+      timeouts.current = [
+        setTimeout(() => setLoadingMessage('Please wait, AI is analyzing your resume...'), 3000),
+        setTimeout(() => setLoadingMessage('AI is working hard! Hang tight...'), 12000),
+        setTimeout(() => setLoadingMessage('Almost there! Just a moment...'), 20000),
+      ];
+    } else {
+      timeouts.current.forEach(clearTimeout);
+      timeouts.current = [];
+    }
+    return () => {
+      timeouts.current.forEach(clearTimeout);
+      timeouts.current = [];
+    };
   }, [isLoading]);
 
-    useEffect(() => {
-      if (isRedirect) {
-        setTimeout(()=> {
-          navigate('/login')
-        }, 2000)
-      }
-    }, [isRedirect]);
+  useEffect(() => {
+    if (isRedirect) {
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    }
+  }, [isRedirect, navigate]);
+
   return (
-    <main className='w-full h-screen flex text-white max-md:flex-col scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-500 scrollbar-track-gray-200'>
-    <div className="basis-[50%] bg-black min-md:border-r border-solid border-gray-500 max-md:border-b">
-      <div className='w-full h-full flex justify-center flex-col items-center'>
-      <Upload setShowButton={setShowButton} onChangeHander={onChangeHander}/>
-      {
-        showButton && (
+    <main className='w-full h-full flex text-white max-md:flex-col scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-500 scrollbar-track-gray-200'>
+      <div className='basis-[50%] max-md:basis-[40%] max-md:border-b bg-gray-900 border-r border-gray-600 flex justify-center items-center flex-col p-6'>
+        <Upload setShowButton={setShowButton} onChangeHandler={onChangeHandler} />
+        {showButton && (
           <button
-          disabled={isLoading}
-          className={`px-4 py-2 rounded-md text-xl max-lg:text-base max-lg:px-3 font-semibold ${isLoading ? 'bg-gray-900' : 'bg-slate-700'} ${isLoading ? 'cursor-none' : 'cursor-pointer'}`}
-          onClick={onSubmitHandler}
+            disabled={isLoading}
+            className={`mt-4 px-5 py-2 text-lg font-semibold rounded-lg transition-all duration-300 ${isLoading ? 'bg-gray-700 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} cursor-pointer`}
+            onClick={onSubmitHandler}
           >
-            {
-              isLoading ? 'Uploading...' : 'Check your resume'
-            }
-            </button>
-        )
-      }
+            {isLoading ? <span className='loader'></span> : 'Check Your Resume'}
+          </button>
+        )}
       </div>
-    </div>
-    <div className="basis-[50%] bg-gray-950 px-5 py-4 max-md:py-6 min-w-[60%] overflow-x-hidden overflow-y-scroll scroll-smooth">
-    <p className='text-center text-xl max-lg:text-lg  font-semibold bg-gray-700 py-2 rounded-sm mb-8'>{
-          responseData ? 'Resume summary' : 'No review data yet.'
-        }</p>
-      {
-        isLoading ? (
-          <div className='w-full h-full flex justify-center items-center'>
-          <p className='font-semibold text-2xl max-lg:text-xl max-md:text-base'>
+      <div className='basis-[50%] max-md:basis-[60%] bg-gray-950 p-6 overflow-y-auto'>
+        <p className='text-center text-lg font-semibold bg-gray-700 py-3 rounded-md mb-6'>
+          {responseData ? 'Resume Summary' : 'No review data yet.'}
+        </p>
+        {isLoading ? (
+          <div className='w-full flex justify-center items-center text-xl font-semibold'>
             {loadingMessage}
-          </p>
           </div>
         ) : (
-          <ResumeReviewPreview PreviewData={responseData}/>
-        )
-      }
-    </div>
-  </main>
-  )
-}
+          <ResumeReviewPreview PreviewData={responseData} />
+        )}
+      </div>
+    </main>
+  );
+};
 
-export default Home
+export default Home;

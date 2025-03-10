@@ -1,6 +1,5 @@
 
-
-const Upload = ({onChangeHander}) => {
+const Upload = ({onChangeHandler}) => {
 
   return (
     <>
@@ -17,7 +16,7 @@ const Upload = ({onChangeHander}) => {
     id='file'
     className='hidden'
     required
-    onChange={(e)=> onChangeHander(e)}
+    onChange={(e)=> onChangeHandler(e)}
     />
     </>
   )
