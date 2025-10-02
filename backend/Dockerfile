@@ -1,11 +1,13 @@
-FROM node:18
+FROM node:18-alpine
 
 # Set the working directory in the container
-WORKDIR /src/server
+WORKDIR /backend/src/server
 
 # Copy package.json and package-lock.json to the working directory
 # This allows Docker to cache the npm install step, improving build times
 COPY package*.json ./
+
+USER node
 
 # Install application dependencies
 RUN npm install
