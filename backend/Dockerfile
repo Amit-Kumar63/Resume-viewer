@@ -1,7 +1,7 @@
 FROM node:18
 
 # Set the working directory in the container
-WORKDIR /src/app
+WORKDIR /src
 
 # Copy package.json and package-lock.json to the working directory
 # This allows Docker to cache the npm install step, improving build times
