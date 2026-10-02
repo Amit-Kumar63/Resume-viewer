@@ -1,21 +1,39 @@
-const admin = require('../../firebase-admin')
 const userModel = require('../models/user.model')
+const { verifyToken } = require('../services/user.service')
 
-module.exports.userAuthMiddleware = async (req, res , next)=> {
-    const token = req.headers?.authorization?.split(' ')[1]
+const getBearer = (req) => {
+    const [scheme, token] = (req.headers.authorization || '').split(' ')
+    return scheme === 'Bearer' && token && token !== 'null' && token !== 'undefined' ? token : null
+}
 
-    if (!token) {
-        return res.status(401).json({ message: 'accessToken not found' })
-    }
+const resolveUser = async (token) => {
+    const payload = verifyToken(token)
+    const user = await userModel.findById(payload.sub)
+    // tokenVersion changes on logout, invalidating older tokens
+    if (!user || user.tokenVersion !== payload.v) throw new Error('Session expired')
+    return user
+}
+
+module.exports.requireAuth = async (req, res, next) => {
+    const token = getBearer(req)
+    if (!token) return res.status(401).json({ message: 'Please log in to continue' })
     try {
-        const decodedToken = await admin.auth().verifyIdToken(token)
-        if (!decodedToken) throw new Error('Firebase auth token verification failed')
-        const { email } = decodedToken
-        const user = await userModel.findOne({email})
-        if (!user) throw Error('User not exist. Please signup')
-        req.user = user
-    next()
-    } catch (error) {
-        res.status(401).json({message: error.message || 'Something went wrong. While user decoding from accessToken'})
+        req.user = await resolveUser(token)
+        next()
+    } catch {
+        res.status(401).json({ message: 'Your session has expired. Please log in again' })
     }
+}
+
+// Attaches req.user when a valid token is sent, but lets guests through
+module.exports.optionalAuth = async (req, res, next) => {
+    const token = getBearer(req)
+    if (token) {
+        try {
+            req.user = await resolveUser(token)
+        } catch {
+            return res.status(401).json({ message: 'Your session has expired. Please log in again' })
+        }
+    }
+    next()
 }

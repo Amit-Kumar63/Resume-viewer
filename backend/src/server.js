@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const app = require('./app')
 const http = require('http')
 const connectDB = require('./db/db')
@@ -10,4 +12,3 @@ const server = http.createServer(app)
 server.listen(PORT, ()=> {
     console.log(`Server is running on Port: ${PORT}`)
 })
-

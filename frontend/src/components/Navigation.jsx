@@ -1,118 +1,116 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { auth, signOut } from '../../firebase.config'
+import { useAuth } from '../context/AuthContext'
+
+const LINKS = [
+  { to: '/', label: 'Review' },
+  { to: '/about-us', label: 'How it works' },
+  { to: '/developer-info', label: 'Developer' },
+]
 
 const Navigation = () => {
-    const [openMenu, setOpenMenu] = useState(false)
-    const [token, setToken] = useState(null)
+  const [openMenu, setOpenMenu] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const { user, ready, logout } = useAuth()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
 
-    const navigate = useNavigate()
+  useEffect(() => { setOpenMenu(false) }, [pathname])
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
-    const login = ()=> {
-        setOpenMenu(false)
-        navigate('/login')
-    }
-    const signup = ()=> {
-        setOpenMenu(false)
-        navigate('/signup')
-    }
+  const logoutHandler = async () => {
+    await logout()
+    toast.success('Logged out')
+    navigate('/')
+  }
 
-    useEffect(()=> {
-        setToken(localStorage.getItem('ai.hr'))
-    }, [])
+  const initial = (user?.name || user?.email || '?').charAt(0).toUpperCase()
 
-    const logoutHandler = async ()=> {
-        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/user/logout`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        const { data, message } = await res.json()
-        if (res.status === 200) {
-            toast.success(message || 'User logged out')
-            localStorage.removeItem('ai.hr')
-            await signOut(auth)
-            setTimeout(()=> {
-                location.replace('/login')
-            }, 2000)
-        }
-    }
   return (
-    <header className='w-full py-4 px-5 max-md:py-2 bg-gray-900 text-white flex justify-between items-center'>
-        <Link to='/'>
-        <img src="logo.png" alt="logo" className='w-12 h-w-12 object-cover'/>
+    <header className='sticky top-0 z-40 px-4 pt-4'>
+      <div className={`mx-auto flex max-w-6xl items-center justify-between rounded-full px-3 py-2 transition-all duration-300 ${scrolled || openMenu ? 'glass' : 'border border-transparent'}`}>
+        <Link to='/' className='flex items-center gap-2.5 pl-2'>
+          <span className='grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 text-ink shadow-[0_0_24px_-4px_#9b8cff]'>
+            <i className='ri-file-search-line text-lg' />
+          </span>
+          <span className='font-semibold tracking-tight'>Resume <span className='font-serif text-[1.15em] font-normal italic text-accent'>Reviewer</span></span>
         </Link>
-        <nav className='flex items-center gap-5 text-lg font-semibold max-md:hidden'>
-            <Link to='/'>Home</Link>        
-            <Link to='/about-us'>About Us</Link>
-            <Link to='/developer-info'>Developer Info</Link>
-        </nav>
-        <div className='flex gap-5 max-md:hidden'>
-            {
-                token ? (
-                    <button
-                    onClick={logoutHandler}
-                    className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
-                    >Logout</button>
-                ) : (
-                    <>
-                <button
-            onClick={login}
-            className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
+
+        <nav className='hidden items-center gap-1 md:flex'>
+          {LINKS.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end
+              className={({ isActive }) => `rounded-full px-4 py-2 text-sm transition-colors ${isActive ? 'bg-white/[0.07] text-fg' : 'text-muted hover:text-fg'}`}
             >
-                Login
-            </button>
-            <button
-            onClick={signup}
-            className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
-            >
-                Signup
-            </button>
-                </>
-                )
-            }
-        </div>
-        <div className='hidden max-md:flex relative'>
-        {
-            openMenu ? <i className="ri-menu-3-line text-3xl" 
-            onClick={()=> setOpenMenu(!openMenu)}
-            /> : 
-            <i className="ri-menu-line text-3xl" 
-            onClick={()=> setOpenMenu(!openMenu)}
-            />
-        }
-        {
-            openMenu && (
-                <div className='select-none absolute z-10 px-5 py-4 gap-5 flex flex-col w-40 rounded-sm bg-gray-500 right-2 top-8'>
-                <button
-                onClick={login}
-                    className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
-                    >
-                        Login
-                    </button>
-                    <button
-                    onClick={signup}
-                    className='py-2 px-4 font-semibold border border-solid border-gray-600 rounded-md hover:rounded-full cursor-pointer'
-                    >
-                        Signup
-                    </button>
-                    <nav className='flex flex-col text-center items-center gap-5 text-base font-semibold'>
-            <Link 
-            onClick={()=> setOpenMenu(false)}
-            to='/' className='border-b border-solid border-gray-600 w-full pb-3'>Home</Link>        
-            <Link 
-            onClick={()=> setOpenMenu(false)}
-            to='/about-us' className='border-b border-solid border-gray-600 w-full pb-3'>About Us</Link>
-            <Link 
-            onClick={()=> setOpenMenu(false)}
-            to='/developer-info' className='w-full'>Developer Info</Link>
+              {label}
+            </NavLink>
+          ))}
         </nav>
-                </div>
-            )
-        }
+
+        <div className='hidden items-center gap-2 md:flex'>
+          {!ready ? (
+            <span className='skeleton h-9 w-36 rounded-full' />
+          ) : user ? (
+            <>
+              <span className='flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-3 text-sm text-muted'>
+                <span className='grid h-7 w-7 place-items-center rounded-full bg-accent/20 font-medium text-accent'>{initial}</span>
+                <span className='max-w-40 truncate'>{user.name || user.email}</span>
+              </span>
+              <button onClick={logoutHandler} className='btn-ghost text-sm' title='Log out'>
+                <i className='ri-logout-box-r-line' />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to='/login' className='rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-fg'>Log in</Link>
+              <Link to='/signup' className='btn-primary !px-5 !py-2 text-sm'>Get started</Link>
+            </>
+          )}
         </div>
+
+        <button
+          className='grid h-10 w-10 place-items-center rounded-full text-2xl md:hidden'
+          onClick={() => setOpenMenu(!openMenu)}
+          aria-label='Toggle menu'
+        >
+          <i className={openMenu ? 'ri-close-line' : 'ri-menu-4-line'} />
+        </button>
+      </div>
+
+      {openMenu && (
+        <div className='glass reveal mx-auto mt-2 flex max-w-6xl flex-col gap-1 rounded-3xl p-3 md:hidden'>
+          {LINKS.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end
+              className={({ isActive }) => `rounded-2xl px-4 py-3 ${isActive ? 'bg-white/[0.07] text-fg' : 'text-muted'}`}
+            >
+              {label}
+            </NavLink>
+          ))}
+          <div className='mt-2 border-t border-line pt-3'>
+            {user ? (
+              <button onClick={logoutHandler} className='btn-ghost w-full'>
+                <i className='ri-logout-box-r-line' /> Log out ({user.email})
+              </button>
+            ) : (
+              <div className='grid grid-cols-2 gap-2'>
+                <Link to='/login' className='btn-ghost'>Log in</Link>
+                <Link to='/signup' className='btn-primary !py-2.5'>Sign up</Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   )
 }

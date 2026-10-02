@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Secrets: keep real values local, commit .env.example instead
+.env
+!.env.example
+
+# Build output / temp uploads
+dist/
+backend/public/temp/*
+!backend/public/temp/.gitkeep
